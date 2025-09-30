@@ -12,9 +12,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@prisma/client": "^6.16.2",
     "@types/express": "^5.0.3",
-    "express": "^5.1.0",
     "common": "*",
-    "db": "*"
+    "db": "*",
+    "express": "^5.1.0"
   }
 }

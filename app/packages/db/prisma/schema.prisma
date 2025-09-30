@@ -35,6 +35,11 @@ enum EyeColorEnum{
   Hazel
   Gray
 }
+enum OutputEnum{
+  Pending
+  Generated 
+  Failed
+}
 model User {
   id             String @id @default (uuid())
   username       String
@@ -44,6 +49,7 @@ model User {
 }
 model Model {
   id              String  @id @default(uuid())
+  userId          String
   name            String
   type            ModelTypeEnum
   age             Int
@@ -69,6 +75,8 @@ model OutputImages {
   modelId   String
   userId    String
   model     Model @relation(fields:[modelId],references: [id])
+  prompt    String
+  status    OutputEnum
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

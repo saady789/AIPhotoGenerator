@@ -1,16 +1,113 @@
 import express from "express";
 const PORT = process.env.PORT || 3001;
 const app = express();
+app.use(express.json());
 import {
   TrainModel,
   GenerateImage,
   GenerateImagesFromPack,
 } from "common/types";
-
-import { PrismaClient } from "db";
+import PrismaClient from "db";
+const USER_ID = "123";
 
 app.get("/", (req, res) => {
   res.send("Hello World");
+});
+app.post("/ai/training", async (req, res) => {
+  const parsedBody = TrainModel.safeParse(req.body);
+  if (!parsedBody.success) {
+    res.status(411).json({
+      message: "Input Incorrect",
+    });
+    return;
+  }
+  const data = await PrismaClient.model.create({
+    data: {
+      name: parsedBody.data.name,
+      age: parsedBody.data.age,
+      type: parsedBody.data.type,
+      ethnicity: parsedBody.data.ethinicity,
+      eyeColor: parsedBody.data.eyeColor,
+      bald: parsedBody.data.bald,
+      // outputImages: parsedBody.data.images,
+      userId: parsedBody.data.userId,
+    },
+  });
+  res.json({
+    modelId: data.id,
+  });
+});
+
+app.post("/ai/generate", async (req, res) => {
+  const parsedBody = GenerateImage.safeParse(req.body);
+  if (!parsedBody.success) {
+    res.status(411).json({});
+    return;
+  }
+  const data = await PrismaClient.outputImages.create({
+    data: {
+      prompt: parsedBody.data.prompt,
+      userId: parsedBody.data.userId,
+      modelId: parsedBody.data.modelId,
+      imageUrl: "",
+      status: "Failed",
+    },
+  });
+  res.json({
+    imageId: data.id,
+  });
+});
+
+app.post("/pack/generate", async (req, res) => {
+  const parsedBody = GenerateImagesFromPack.safeParse(req.body);
+  if (!parsedBody.success) {
+    res.status(411).json({
+      message: "Input incorrect",
+    });
+    return;
+  }
+  const prompts = await PrismaClient.packPrompts.findMany({
+    where: {
+      packId: parsedBody.data.packId,
+    },
+  });
+  const images = await PrismaClient.outputImages.createManyAndReturn({
+    data: prompts.map((prompt: any) => ({
+      prompt: prompt.prompt,
+      userId: USER_ID,
+      modelId: parsedBody.data.modelId,
+      imageUrl: "",
+      status: "Failed",
+    })),
+  });
+  res.json({
+    images: images.map((image: any) => image.id),
+  });
+});
+
+app.get("/pack/bulk", async (req, res) => {
+  const packs = await PrismaClient.packs.findMany({});
+  res.json({ packs });
+});
+
+app.get("/image/bulk", async (req, res) => {
+  const images = req.query.images;
+  const limit = req.query.limit as string;
+  const offset = req.query.offset as string;
+  // const imagesData = await PrismaClient.outputImages.findMany({
+  //   where: {
+  //     id: { in: images },
+  //     userId: USER_ID,
+  //   },
+  //   skip: parseInt(offset),
+  //   take: parseInt(limit),
+  // });
+  // res.json({
+  //   images: imagesData,
+  // });
+  res.json({
+    output: "success",
+  });
 });
 
 app.listen(3000, () => {
