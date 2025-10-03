@@ -7,7 +7,7 @@ import {
   GenerateImage,
   GenerateImagesFromPack,
 } from "common/types";
-import PrismaClient from "db";
+import PrismaClient, { prisma } from "db";
 const USER_ID = "123";
 
 app.get("/", (req, res) => {
@@ -31,6 +31,8 @@ app.post("/ai/training", async (req, res) => {
       bald: parsedBody.data.bald,
       // outputImages: parsedBody.data.images,
       userId: parsedBody.data.userId,
+      triggerWord: "asbc",
+      tensorPath: "sdf",
     },
   });
   res.json({
@@ -107,6 +109,40 @@ app.get("/image/bulk", async (req, res) => {
   // });
   res.json({
     output: "success",
+  });
+});
+
+app.post("/fal-ai/webhook/train", async (req, res) => {
+  console.log(req.body);
+  const requestId = req.body.request_id;
+  await prisma.model.updateMany({
+    where: {
+      falAiRequestId: requestId,
+    },
+    data: {
+      trainingStatus: "Generated",
+      tensorPath: req.body.tensor_path,
+    },
+  });
+  res.json({
+    message: "webhook received",
+  });
+});
+
+app.post("/fal-ai/webhook/image", async (req, res) => {
+  console.log(req.body);
+  const requestId = req.body.request_id;
+  await prisma.outputImages.updateMany({
+    where: {
+      falAiRequestId: requestId,
+    },
+    data: {
+      status: "Generated",
+      imageUrl: req.body.image_url,
+    },
+  });
+  res.json({
+    message: "webhook received",
   });
 });
 
