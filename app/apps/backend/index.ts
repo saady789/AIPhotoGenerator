@@ -1,5 +1,6 @@
 import express from "express";
 const PORT = process.env.PORT || 3001;
+import { S3Client, s3, write } from "bun";
 const app = express();
 app.use(express.json());
 import {
@@ -8,7 +9,10 @@ import {
   GenerateImagesFromPack,
 } from "common/types";
 import PrismaClient, { prisma } from "db";
+import { FalAIModel } from "./models/FalAIModel";
 const USER_ID = "123";
+
+const falAiModel = new FalAIModel();
 
 app.get("/", (req, res) => {
   res.send("Hello World");
@@ -21,6 +25,8 @@ app.post("/ai/training", async (req, res) => {
     });
     return;
   }
+  const { request_id, response_url } = await falAiModel.trainModel("", "");
+
   const data = await PrismaClient.model.create({
     data: {
       name: parsedBody.data.name,
@@ -33,6 +39,8 @@ app.post("/ai/training", async (req, res) => {
       userId: parsedBody.data.userId,
       triggerWord: "asbc",
       tensorPath: "sdf",
+      falAiRequestId: request_id,
+      zipUrl: parsedBody.data.zipUrl,
     },
   });
   res.json({
@@ -46,6 +54,21 @@ app.post("/ai/generate", async (req, res) => {
     res.status(411).json({});
     return;
   }
+  const model = await prisma.model.findUnique({
+    where: {
+      id: parsedBody.data.modelId,
+    },
+  });
+  if (!model || !model.tensorPath) {
+    res.status(411).json({
+      message: "Model not found",
+    });
+    return;
+  }
+  const { request_id, response_url } = await falAiModel.generateImage(
+    parsedBody.data.prompt,
+    ""
+  );
   const data = await PrismaClient.outputImages.create({
     data: {
       prompt: parsedBody.data.prompt,

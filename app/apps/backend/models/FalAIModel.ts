@@ -6,7 +6,7 @@ export class FalAIModel extends BaseModel {
     super();
   }
 
-  private override async generateImage(prompt: string, tensorPath: string) {
+  public override async generateImage(prompt: string, tensorPath: string) {
     const result = await fal.subscribe("fal-ai/flux-lora", {
       input: {
         prompt: prompt,
@@ -16,7 +16,7 @@ export class FalAIModel extends BaseModel {
     });
     return result;
   }
-  private override async trainModel(zipUrl: string, triggerWord: string) {
+  public override async trainModel(zipUrl: string, triggerWord: string) {
     const { request_id } = await fal.queue.submit(
       "fal-ai/flux-lora-fast-training",
       {
