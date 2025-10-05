@@ -2,9 +2,11 @@
 
 import { useState, useRef } from "react";
 import { z } from "zod";
+import axios from "axios";
+import JSZip from "jszip";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { BACKEND_URL } from "../../../app/config";
 import { TrainModel } from "common/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -33,6 +35,7 @@ export function TrainForm() {
 
   const form = useForm<TrainModelType>({
     resolver: zodResolver(TrainModel),
+    mode: "onChange",
     defaultValues: {
       name: "",
       type: "Man",
@@ -45,9 +48,36 @@ export function TrainForm() {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof TrainModel>) => {
+  async function createImageZip(files: File[]) {
+    const zip = new JSZip();
+
+    files.forEach((file) => {
+      zip.file(file.name, file); // file.name = "image1.png", file is a File/Blob
+    });
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+
+    return zipBlob;
+  }
+
+  const onSubmit = async (values: TrainModelType) => {
+    if (file == null) return alert("Plz upload your files as well");
     console.log("Form values:", values);
     console.log("Selected file:", file);
+    try {
+      const response = await axios.get(`${BACKEND_URL}/pre-signed-url`);
+      const { url, key } = response.data;
+      console.log(response);
+      const zipBlob = await createImageZip([file]);
+      const res = await axios.put(url, zipBlob, {
+        headers: {
+          "Content-Type": " application/zip",
+        },
+      });
+      console.log(res);
+    } catch (error) {
+      //display internal server error
+    }
   };
 
   return (
@@ -185,6 +215,7 @@ export function TrainForm() {
               <FormLabel className="mr-4">Bald</FormLabel>
               <FormControl>
                 <Switch
+                  className="cursor-pointer"
                   checked={field.value}
                   onCheckedChange={field.onChange}
                 />
@@ -223,10 +254,12 @@ export function TrainForm() {
 
         {/* Buttons */}
         <div className="flex justify-between mt-6">
-          <Button type="button" variant="outline">
+          {/* <Button type="button" variant="outline">
             Cancel
+          </Button> */}
+          <Button type="submit" className="cursor-pointer">
+            Create Model
           </Button>
-          <Button type="submit">Create Model</Button>
         </div>
       </form>
     </Form>

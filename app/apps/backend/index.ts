@@ -1,8 +1,17 @@
 import express from "express";
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8000;
+import cors from "cors";
 import { S3Client, s3, write } from "bun";
 const app = express();
 app.use(express.json());
+const corsOptions = {
+  origin: ["http://localhost:3000"], // Allowed origins
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allowed HTTP methods
+  credentials: true, // Allow sending cookies/authorization headers
+  optionsSuccessStatus: 200, // Status for preflight requests
+};
+
+app.use(cors(corsOptions));
 import {
   TrainModel,
   GenerateImage,
@@ -177,16 +186,21 @@ app.post("/fal-ai/webhook/image", async (req, res) => {
 
 app.get("/pre-signed-url", async (req, res) => {
   const key = `models/${Date.now()}_${Math.random()}.zip`;
-  const url = S3Client.presign(`models/${Date.now()}_${Math.random()}.zip`, {
-    bucket: process.env.BUCKET_NAME,
-    endpoint: process.env.ENDPOINT,
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_KEY,
-    expiresIn: 60 * 5,
-  });
+  const url = await S3Client.presign(
+    `models/${Date.now()}_${Math.random()}.zip`,
+    {
+      method: "PUT",
+      bucket: process.env.BUCKET_NAME,
+      endpoint: process.env.ENDPOINT,
+      accessKeyId: process.env.S3_ACCESS_KEY,
+      secretAccessKey: process.env.S3_SECRET_KEY,
+      expiresIn: 60 * 5,
+      type: "application/zip",
+    }
+  );
   res.json({ url, key });
 });
 
-app.listen(3000, () => {
+app.listen(PORT, () => {
   console.log("server is up and running");
 });
