@@ -25,7 +25,7 @@ app.post("/ai/training", async (req, res) => {
     });
     return;
   }
-  const { request_id, response_url } = await falAiModel.trainModel("", "");
+  const request_id = await falAiModel.trainModel("", "");
 
   const data = await PrismaClient.model.create({
     data: {
@@ -65,10 +65,7 @@ app.post("/ai/generate", async (req, res) => {
     });
     return;
   }
-  const { request_id, response_url } = await falAiModel.generateImage(
-    parsedBody.data.prompt,
-    ""
-  );
+  const request_id = await falAiModel.generateImage(parsedBody.data.prompt, "");
   const data = await PrismaClient.outputImages.create({
     data: {
       prompt: parsedBody.data.prompt,
@@ -96,6 +93,15 @@ app.post("/pack/generate", async (req, res) => {
       packId: parsedBody.data.packId,
     },
   });
+  let requestIds: { requestId: string }[] = await Promise.all(
+    prompts.map(async (prompt) => {
+      const res = await falAiModel.generateImage(
+        prompt.prompt,
+        parsedBody.data.modelId
+      );
+      return { requestId: res.requestId };
+    })
+  );
   const images = await PrismaClient.outputImages.createManyAndReturn({
     data: prompts.map((prompt: any) => ({
       prompt: prompt.prompt,
@@ -167,6 +173,18 @@ app.post("/fal-ai/webhook/image", async (req, res) => {
   res.json({
     message: "webhook received",
   });
+});
+
+app.get("/pre-signed-url", async (req, res) => {
+  const key = `models/${Date.now()}_${Math.random()}.zip`;
+  const url = S3Client.presign(`models/${Date.now()}_${Math.random()}.zip`, {
+    bucket: process.env.BUCKET_NAME,
+    endpoint: process.env.ENDPOINT,
+    accessKeyId: process.env.S3_ACCESS_KEY,
+    secretAccessKey: process.env.S3_SECRET_KEY,
+    expiresIn: 60 * 5,
+  });
+  res.json({ url, key });
 });
 
 app.listen(3000, () => {
