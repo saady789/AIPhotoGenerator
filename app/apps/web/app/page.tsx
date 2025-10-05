@@ -1,7 +1,9 @@
 import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-// import styles from "./page.module.css";
-
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+  ButtonGroupText,
+} from "@/components/ui/button-group";
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
   srcDark: string;
@@ -19,5 +21,9 @@ const ThemeImage = (props: Props) => {
 };
 
 export default function Home() {
-  return <h1 className="text-3xl font-bold ">Hello world!</h1>;
+  return (
+    <ButtonGroup>
+      <ButtonGroupText>Text</ButtonGroupText>
+    </ButtonGroup>
+  );
 }
