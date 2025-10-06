@@ -16,12 +16,14 @@
     "@prisma/client": "^6.16.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "add": "^2.0.6",
     "bun": "^1.2.23",
     "common": "*",
     "cors": "^2.8.5",
     "db": "*",
     "express": "^5.1.0",
-    "i": "^0.3.7"
+    "i": "^0.3.7",
+    "jsonwebtoken": "^9.0.2"
   }
 }

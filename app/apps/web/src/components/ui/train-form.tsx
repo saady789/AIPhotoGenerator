@@ -10,6 +10,7 @@ import { BACKEND_URL } from "../../../app/config";
 import { TrainModel } from "common/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@clerk/nextjs";
 import {
   Form,
   FormField,
@@ -28,6 +29,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 export function TrainForm() {
+  const { getToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -62,8 +64,8 @@ export function TrainForm() {
 
   const onSubmit = async (values: TrainModelType) => {
     if (file == null) return alert("Plz upload your files as well");
-    console.log("Form values:", values);
-    console.log("Selected file:", file);
+    // console.log("Form values:", values);
+    // console.log("Selected file:", file);
     try {
       const response = await axios.get(`${BACKEND_URL}/pre-signed-url`);
       const { url, key } = response.data;
@@ -75,6 +77,17 @@ export function TrainForm() {
         },
       });
       console.log(res);
+      const token = await getToken();
+
+      const trainModel = await axios.post(
+        `${BACKEND_URL}/ai/training`,
+        { ...values, zipUrl: key },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     } catch (error) {
       //display internal server error
     }

@@ -2,6 +2,7 @@ import express from "express";
 const PORT = process.env.PORT || 8000;
 import cors from "cors";
 import { S3Client, s3, write } from "bun";
+import { authMiddleware } from "./middleware";
 const app = express();
 app.use(express.json());
 const corsOptions = {
@@ -28,32 +29,33 @@ app.get("/", (req, res) => {
 });
 app.post("/ai/training", async (req, res) => {
   const parsedBody = TrainModel.safeParse(req.body);
+  console.log("Parsed body is ", parsedBody);
   if (!parsedBody.success) {
     res.status(411).json({
       message: "Input Incorrect",
     });
     return;
   }
-  const request_id = await falAiModel.trainModel("", "");
+  // const request_id = await falAiModel.trainModel("", "");
 
-  const data = await PrismaClient.model.create({
-    data: {
-      name: parsedBody.data.name,
-      age: parsedBody.data.age,
-      type: parsedBody.data.type,
-      ethnicity: parsedBody.data.ethinicity,
-      eyeColor: parsedBody.data.eyeColor,
-      bald: parsedBody.data.bald,
-      // outputImages: parsedBody.data.images,
-      userId: parsedBody.data.userId,
-      triggerWord: "asbc",
-      tensorPath: "sdf",
-      falAiRequestId: request_id,
-      zipUrl: parsedBody.data.zipUrl,
-    },
-  });
+  // const data = await PrismaClient.model.create({
+  //   data: {
+  //     name: parsedBody.data.name,
+  //     age: parsedBody.data.age,
+  //     type: parsedBody.data.type,
+  //     ethnicity: parsedBody.data.ethinicity,
+  //     eyeColor: parsedBody.data.eyeColor,
+  //     bald: parsedBody.data.bald,
+  //     // outputImages: parsedBody.data.images,
+  //     userId: parsedBody.data.userId,
+  //     triggerWord: "asbc",
+  //     tensorPath: "sdf",
+  //     falAiRequestId: request_id,
+  //     zipUrl: parsedBody.data.zipUrl,
+  //   },
+  // });
   res.json({
-    modelId: data.id,
+    modelId: "modelId",
   });
 });
 
