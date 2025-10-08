@@ -1,5 +1,5 @@
 "use client";
-
+import { useUser } from "@clerk/nextjs";
 import { useState, useRef } from "react";
 import { z } from "zod";
 import axios from "axios";
@@ -29,6 +29,8 @@ import {
 import { Switch } from "@/components/ui/switch";
 
 export function TrainForm() {
+  const { user } = useUser();
+
   const { getToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -81,7 +83,7 @@ export function TrainForm() {
 
       const trainModel = await axios.post(
         `${BACKEND_URL}/ai/training`,
-        { ...values, zipUrl: key },
+        { ...values, zipUrl: key, userId: user?.id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -90,6 +92,7 @@ export function TrainForm() {
       );
     } catch (error) {
       //display internal server error
+      console.log("internal server error ");
     }
   };
 

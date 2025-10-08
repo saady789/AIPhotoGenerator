@@ -27,39 +27,50 @@ const falAiModel = new FalAIModel();
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-app.post("/ai/training", async (req, res) => {
-  const parsedBody = TrainModel.safeParse(req.body);
-  console.log("Parsed body is ", parsedBody);
-  if (!parsedBody.success) {
-    res.status(411).json({
-      message: "Input Incorrect",
-    });
-    return;
-  }
-  // const request_id = await falAiModel.trainModel("", "");
+app.post("/ai/training", authMiddleware, async (req, res) => {
+  try {
+    const parsedBody = TrainModel.safeParse(req.body);
+    console.log("Parsed body is ", parsedBody);
+    if (!parsedBody.success) {
+      res.status(411).json({
+        message: "Input Incorrect",
+      });
+      return;
+    }
+    const request_id = await falAiModel.trainModel(
+      parsedBody.data.zipUrl,
+      parsedBody.data.name
+    );
 
-  // const data = await PrismaClient.model.create({
-  //   data: {
-  //     name: parsedBody.data.name,
-  //     age: parsedBody.data.age,
-  //     type: parsedBody.data.type,
-  //     ethnicity: parsedBody.data.ethinicity,
-  //     eyeColor: parsedBody.data.eyeColor,
-  //     bald: parsedBody.data.bald,
-  //     // outputImages: parsedBody.data.images,
-  //     userId: parsedBody.data.userId,
-  //     triggerWord: "asbc",
-  //     tensorPath: "sdf",
-  //     falAiRequestId: request_id,
-  //     zipUrl: parsedBody.data.zipUrl,
-  //   },
-  // });
-  res.json({
-    modelId: "modelId",
-  });
+    const data = await PrismaClient.model.create({
+      data: {
+        name: parsedBody.data.name,
+        age: parsedBody.data.age,
+        type: parsedBody.data.type,
+        ethnicity: parsedBody.data.ethinicity,
+        eyeColor: parsedBody.data.eyeColor,
+        bald: parsedBody.data.bald,
+        // outputImages: parsedBody.data.images,
+        userId: parsedBody.data.userId,
+        triggerWord: "asbc",
+        tensorPath: "sdf",
+        falAiRequestId: request_id,
+        zipUrl: parsedBody.data.zipUrl,
+      },
+    });
+    res.json({
+      modelId: data.id,
+    });
+  } catch (error) {
+    console.error("Error in /ai/training:", error);
+    res.status(500).json({
+      message: "Training failed",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 });
 
-app.post("/ai/generate", async (req, res) => {
+app.post("/ai/generate", authMiddleware, async (req, res) => {
   const parsedBody = GenerateImage.safeParse(req.body);
   if (!parsedBody.success) {
     res.status(411).json({});
@@ -91,7 +102,7 @@ app.post("/ai/generate", async (req, res) => {
   });
 });
 
-app.post("/pack/generate", async (req, res) => {
+app.post("/pack/generate", authMiddleware, async (req, res) => {
   const parsedBody = GenerateImagesFromPack.safeParse(req.body);
   if (!parsedBody.success) {
     res.status(411).json({
@@ -127,12 +138,12 @@ app.post("/pack/generate", async (req, res) => {
   });
 });
 
-app.get("/pack/bulk", async (req, res) => {
+app.get("/pack/bulk", authMiddleware, async (req, res) => {
   const packs = await PrismaClient.packs.findMany({});
   res.json({ packs });
 });
 
-app.get("/image/bulk", async (req, res) => {
+app.get("/image/bulk", authMiddleware, async (req, res) => {
   const images = req.query.images;
   const limit = req.query.limit as string;
   const offset = req.query.offset as string;

@@ -2,6 +2,7 @@ import { BaseModel } from "./BaseModel";
 import { fal } from "@fal-ai/client";
 
 export class FalAIModel extends BaseModel {
+  private devMode = process.env.DEV_MODE === "true";
   constructor() {
     super();
   }
@@ -17,6 +18,10 @@ export class FalAIModel extends BaseModel {
     return result;
   }
   public override async trainModel(zipUrl: string, triggerWord: string) {
+    if (this.devMode) {
+      console.log("[DEV MODE] Fake training started");
+      return "fake-request-" + Date.now(); // Fake request ID
+    }
     const { request_id } = await fal.queue.submit(
       "fal-ai/flux-lora-fast-training",
       {
