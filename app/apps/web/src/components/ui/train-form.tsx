@@ -32,7 +32,7 @@ export function TrainForm() {
   const { user } = useUser();
 
   const { getToken } = useAuth();
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   type TrainModelType = z.infer<typeof TrainModel>;
@@ -65,14 +65,14 @@ export function TrainForm() {
   }
 
   const onSubmit = async (values: TrainModelType) => {
-    if (file == null) return alert("Plz upload your files as well");
+    if (files.length == 0) return alert("Plz upload your files as well");
     // console.log("Form values:", values);
     // console.log("Selected file:", file);
     try {
       const response = await axios.get(`${BACKEND_URL}/pre-signed-url`);
       const { url, key } = response.data;
       console.log(response);
-      const zipBlob = await createImageZip([file]);
+      const zipBlob = await createImageZip(files);
       const res = await axios.put(url, zipBlob, {
         headers: {
           "Content-Type": " application/zip",
@@ -251,8 +251,13 @@ export function TrainForm() {
               ref={fileInputRef}
               id="file"
               type="file"
+              accept="image/*"
+              multiple
               className="hidden"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={(e) => {
+                const selectedFiles = Array.from(e.target.files || []);
+                setFiles((prev) => [...prev, ...selectedFiles]);
+              }}
             />
 
             <Button
@@ -263,8 +268,12 @@ export function TrainForm() {
               Select Files
             </Button>
           </label>
-          {file && (
-            <p className="mt-2 text-sm text-muted-foreground">{file.name}</p>
+          {files.length > 0 && (
+            <ul className="mt-2 text-sm text-muted-foreground text-left">
+              {files.map((f, i) => (
+                <li key={i}>📄 {f.name}</li>
+              ))}
+            </ul>
           )}
         </div>
 
