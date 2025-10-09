@@ -69,20 +69,24 @@ export function TrainForm() {
     // console.log("Form values:", values);
     // console.log("Selected file:", file);
     try {
-      const response = await axios.get(`${BACKEND_URL}/pre-signed-url`);
+      const token = await getToken();
+      const response = await axios.get(`/api/pre-signed-url`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const { url, key } = response.data;
-      console.log(response);
+      console.log("the s3 response is ", response);
       const zipBlob = await createImageZip(files);
       const res = await axios.put(url, zipBlob, {
         headers: {
           "Content-Type": " application/zip",
         },
       });
-      console.log(res);
-      const token = await getToken();
+      console.log("res is ", res);
 
       const trainModel = await axios.post(
-        `${BACKEND_URL}/ai/training`,
+        `/api/training`,
         { ...values, zipUrl: key, userId: user?.id },
         {
           headers: {
