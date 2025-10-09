@@ -37,9 +37,13 @@ app.post("/ai/training", authMiddleware, async (req, res) => {
       });
       return;
     }
+    const triggerWord =
+      parsedBody.data.name.toLowerCase().replace(/\s+/g, "") +
+      "_" +
+      Math.random().toString(36).substring(2, 7);
     const request_id = await falAiModel.trainModel(
       parsedBody.data.zipUrl,
-      parsedBody.data.name
+      triggerWord
     );
 
     const data = await PrismaClient.model.create({
@@ -52,8 +56,9 @@ app.post("/ai/training", authMiddleware, async (req, res) => {
         bald: parsedBody.data.bald,
         // outputImages: parsedBody.data.images,
         userId: parsedBody.data.userId,
-        triggerWord: "asbc",
+        triggerWord: triggerWord,
         tensorPath: "sdf",
+        trainingStatus: "Pending",
         falAiRequestId: request_id,
         zipUrl: parsedBody.data.zipUrl,
       },
