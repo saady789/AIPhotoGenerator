@@ -175,6 +175,7 @@ app.post("/fal-ai/webhook/train", async (req, res) => {
     where: {
       falAiRequestId: requestId,
     },
+
     data: {
       trainingStatus: "Generated",
       tensorPath: req.body.tensor_path,

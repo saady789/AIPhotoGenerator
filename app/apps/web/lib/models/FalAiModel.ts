@@ -29,7 +29,7 @@ export class FalAIModel extends BaseModel {
           images_data_url: zipUrl,
           trigger_word: triggerWord,
         },
-        webhookUrl: `${process.env.WEBHOOK_BASE_URL}/fal-ai/webhook/train`,
+        webhookUrl: `${process.env.WEBHOOK_BASE_URL}/api/trainmodelwebhook`,
       }
     );
     return request_id;
