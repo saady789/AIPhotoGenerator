@@ -1,19 +1,24 @@
 {
   "name": "db",
+  "version": "1.0.0",
   "module": "index.ts",
   "type": "module",
   "exports": {
     ".": "./index.ts"
   },
   "private": true,
-  "devDependencies": {
-    "@types/bun": "latest",
+  "scripts": {
+    "generate": "prisma generate",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
     "prisma": "^6.16.2"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.16.2"
   }
 }
