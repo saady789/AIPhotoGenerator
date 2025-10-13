@@ -28,11 +28,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       Math.random().toString(36).substring(2, 7);
 
     // ✅ Start training request on Fal
+    console.log("started training of the model");
     const request_id = await falAiModel.trainModel(
       parsedBody.data.zipUrl,
       triggerWord
     );
-
+    console.log("training successful");
     // ✅ Save new model record in DB
     const data = await prisma.model.create({
       data: {
@@ -50,6 +51,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         zipUrl: parsedBody.data.zipUrl,
       },
     });
+    console.log("stored in the db");
 
     // ✅ Respond with created model ID
     return res.status(200).json({ modelId: data.id });
