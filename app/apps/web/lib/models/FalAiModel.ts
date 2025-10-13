@@ -1,6 +1,8 @@
 import { BaseModel } from "./BaseModel";
 import { fal } from "@fal-ai/client";
-
+fal.config({
+  credentials: process.env.FAL_KEY!,
+});
 export class FalAIModel extends BaseModel {
   private devMode = process.env.DEV_MODE === "true";
   constructor() {

@@ -8,6 +8,7 @@ const falAiModel = new FalAIModel();
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log("FAL_KEY loaded:", process.env.FAL_KEY);
     // ✅ Allow only POST requests
     if (req.method !== "POST") {
       return res.status(405).json({ message: "Method not allowed" });
