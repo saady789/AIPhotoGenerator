@@ -18,7 +18,7 @@ export class FalAIModel extends BaseModel {
     return result;
   }
   public override async trainModel(zipUrl: string, triggerWord: string) {
-    if (this.devMode) {
+    if (process.env.DEV_MODE) {
       console.log("[DEV MODE] Fake training started");
       return "fake-request-" + Date.now(); // Fake request ID
     }
