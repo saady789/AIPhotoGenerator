@@ -76,18 +76,22 @@ export function TrainForm() {
         },
       });
       const { url, key } = response.data;
+      console.log("url is ", url, " and key is ", key);
       console.log("the s3 response is ", response);
       const zipBlob = await createImageZip(files);
       const res = await axios.put(url, zipBlob, {
         headers: {
-          "Content-Type": " application/zip",
+          "Content-Type": "application/zip",
         },
       });
       console.log("res is ", res);
+      const zipUrl = `${process.env.NEXT_PUBLIC_R2_ENDPOINT}/${key}`;
+
+      console.log("zipurl is ", zipUrl);
 
       const trainModel = await axios.post(
         `/api/training`,
-        { ...values, zipUrl: key, userId: user?.id },
+        { ...values, zipUrl, userId: user?.id },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -96,7 +100,8 @@ export function TrainForm() {
       );
     } catch (error) {
       //display internal server error
-      console.log("internal server error ");
+      console.error("Upload or training failed:", error);
+      alert("Something went wrong. Check the console for details.");
     }
   };
 

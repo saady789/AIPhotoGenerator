@@ -8,10 +8,13 @@ export default async function handler(
   try {
     console.log("the trainmodelwebhook was called by the fal.ai");
     if (req.method !== "POST") {
+      console.log("the req is not a post req so returning");
       return res.status(405).json({ message: "Method not allowed" });
     }
+    console.log("the request body is ", req.body);
     const requestId = req.body.request_id;
     if (!requestId || !req.body.tensor_path) {
+      console.log("Missing request_id or tensor_path");
       return res
         .status(400)
         .json({ message: "Missing request_id or tensor_path" });
@@ -30,11 +33,12 @@ export default async function handler(
     });
 
     if (result.count === 0) {
+      console.log("No model found for this request ID");
       return res
         .status(404)
         .json({ message: "No model found for this request ID" });
     }
-
+    console.log("Model updated successfully");
     return res.status(200).json({ message: "Model updated successfully" });
   } catch (err: any) {
     console.error("Error in Fal webhook (train):", err);
