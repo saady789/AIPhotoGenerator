@@ -6,40 +6,62 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    console.log("the trainmodelwebhook was called by the fal.ai");
+    console.log("the trainmodelwebhook was called by fal.ai");
+    console.log("the request body is ", req.body);
+
     if (req.method !== "POST") {
       console.log("the req is not a post req so returning");
       return res.status(405).json({ message: "Method not allowed" });
     }
-    console.log("the request body is ", req.body);
-    const requestId = req.body.request_id;
-    if (!requestId || !req.body.tensor_path) {
-      console.log("Missing request_id or tensor_path");
-      return res
-        .status(400)
-        .json({ message: "Missing request_id or tensor_path" });
+
+    const reqId = req.body.request_id;
+    if (!reqId) {
+      console.log("Missing request_id in body");
+      return res.status(400).json({ message: "Missing request_id" });
     }
 
-    console.log("Fal.ai training webhook received:", req.body);
-
-    const result = await prisma.model.updateMany({
-      where: {
-        falAiRequestId: requestId,
-      },
-      data: {
-        trainingStatus: "Generated",
-        tensorPath: req.body.tensor_path,
-      },
+    const model = await prisma.model.findFirst({
+      where: { falAiRequestId: reqId },
     });
 
-    if (result.count === 0) {
-      console.log("No model found for this request ID");
-      return res
-        .status(404)
-        .json({ message: "No model found for this request ID" });
+    if (!model) {
+      console.log("Model not found returning back ");
+      return res.status(404).json({ message: "Model not found" });
     }
-    console.log("Model updated successfully");
-    return res.status(200).json({ message: "Model updated successfully" });
+
+    // handle OK case
+    if (req.body.status === "OK") {
+      const tensorPath = req.body?.payload?.diffusers_lora_file?.url;
+      if (!tensorPath) {
+        console.log("Missing diffusers_lora_file.url in payload");
+        return res.status(400).json({ message: "Missing tensor path" });
+      }
+
+      console.log("The status is OK, updating model to Generated...");
+      await prisma.model.update({
+        where: { id: model.id },
+        data: {
+          trainingStatus: "Generated",
+          tensorPath,
+        },
+      });
+
+      return res.status(200).json({ message: "Status changed to Generated" });
+    }
+
+    // handle ERROR case
+    if (req.body.status === "ERROR") {
+      console.log("The status is ERROR, updating model to Failed...");
+      await prisma.model.update({
+        where: { id: model.id },
+        data: { trainingStatus: "Failed" },
+      });
+
+      return res.status(200).json({ message: "Status changed to Failed" });
+    }
+
+    console.log("No recognized status in webhook, ignoring.");
+    return res.status(200).json({ message: "Webhook received but ignored" });
   } catch (err: any) {
     console.error("Error in Fal webhook (train):", err);
     return res
