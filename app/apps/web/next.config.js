@@ -3,7 +3,19 @@ import { PrismaPlugin } from "@prisma/nextjs-monorepo-workaround-plugin";
 
 const nextConfig = {
   images: {
-    domains: ["r2-us-west.photoai.com"], // ✅ Add this line
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pub-*.r2.dev", // ✅ wildcard subdomains allowed here
+      },
+      {
+        protocol: "https",
+        hostname: "r2-us-west.photoai.com",
+      },
+    ],
+  },
+  experimental: {
+    serverActions: true,
   },
   webpack: (config, { isServer }) => {
     if (isServer) {

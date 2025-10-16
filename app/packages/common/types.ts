@@ -25,7 +25,7 @@ export const TrainModel = z.object({
     .enum(["Man", "Woman", "Others"])
     .refine((val) => !!val, { message: "Type is required" }),
   age: z.number().min(1, "Age must be greater than 0"),
-  ethinicity: z
+  ethnicity: z
     .enum([
       "White",
       "Black",

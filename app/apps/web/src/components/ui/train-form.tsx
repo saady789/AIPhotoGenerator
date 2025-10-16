@@ -44,7 +44,7 @@ export function TrainForm() {
       name: "",
       type: "Man",
       age: 0,
-      ethinicity: "SouthAsian",
+      ethnicity: "SouthAsian",
       eyeColor: "Brown",
       bald: false,
       zipUrl: "zipUrl",
@@ -179,7 +179,7 @@ export function TrainForm() {
         {/* Ethnicity */}
         <FormField
           control={form.control}
-          name="ethinicity"
+          name="ethnicity"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Ethnicity</FormLabel>

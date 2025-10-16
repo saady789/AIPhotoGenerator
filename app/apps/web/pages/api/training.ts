@@ -41,7 +41,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         name: parsedBody.data.name,
         age: parsedBody.data.age,
         type: parsedBody.data.type,
-        ethnicity: parsedBody.data.ethinicity,
+        ethnicity: parsedBody.data.ethnicity,
         eyeColor: parsedBody.data.eyeColor,
         bald: parsedBody.data.bald,
         userId: parsedBody.data.userId, // from client for now (later attach from JWT)
