@@ -13,7 +13,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log("body is ", req.body);
     const tensorPath = req.body.model.tensorPath;
     const prompt = req.body.prompt;
-    const request_id = falAiModel.generateImage(prompt, tensorPath);
+    const request_id = await falAiModel.generateImage(prompt, tensorPath);
+    console.log("request_id is ", request_id);
     console.log("training successful");
 
     return res.status(200).json({ message: "api hit was successful" });
