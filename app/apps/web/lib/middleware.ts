@@ -9,6 +9,7 @@ export function authMiddleware(handler: NextApiHandler) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       const authHeader = req.headers["authorization"];
+      console.log("auth header is ", authHeader);
       const token = authHeader?.split(" ")[1];
 
       console.log("🔐 Auth Header:", authHeader);

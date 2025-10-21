@@ -1,5 +1,5 @@
 "use client";
-// import { GenerateImage } from "@/components/GenerateImage";
+import { GenerateImage } from "@/components/ui/GenerateImage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrainForm } from "@/components/ui/train-form";
 // import { Packs } from "@/components/ui/Packs";
@@ -79,7 +79,7 @@ export default function DashboardPage() {
               value="generate"
               className="mt-0 focus-visible:outline-none"
             >
-              {/* <GenerateImage /> */} p generate image
+              <GenerateImage />
             </TabsContent>
             <TabsContent
               value="packs"

@@ -7,6 +7,7 @@ export default async function handler(
 ) {
   try {
     if (req.method !== "POST") {
+      console.log("post is not allowed so returning ");
       return res.status(405).json({ message: "Method not allowed" });
     }
 

@@ -1,107 +1,144 @@
-// "use client";
+"use client";
+import { useState, useEffect } from "react";
+import { useAuth } from "@clerk/nextjs";
+import { TrainModel } from "common/types";
+import axios from "axios";
+import Image from "next/image";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { useUser } from "@clerk/nextjs";
+import { z } from "zod";
+import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../ui/select";
+import { Loader2 } from "lucide-react";
 
-// import { useAuth } from "@clerk/nextjs";
-// import { useState } from "react";
-// import { Button } from "@/components/ui/button";
-// import { Textarea } from "@/components/ui/textarea";
-// import axios from "axios";
-// // import { BACKEND_URL } from "@/app/config";
-// import { SelectModel } from "./Models";
-// import toast from "react-hot-toast";
-// import { motion } from "framer-motion";
-// import { Sparkles } from "lucide-react";
-// // import { useCredits } from "@/hooks/use-credits";
-// import { useRouter } from "next/navigation";
-// import CustomLabel from "./ui/customLabel";
-// import { GlowEffect } from "./GlowEffect";
-
-// export function GenerateImage() {
-//   const [prompt, setPrompt] = useState("");
-//   const [selectedModel, setSelectedModel] = useState<string>();
-//   const [isGenerating, setIsGenerating] = useState(false);
-//   const { getToken } = useAuth();
-//   // const { credits } = useCredits();
-//   const router = useRouter();
-
-//   const handleGenerate = async () => {
-//     if (!prompt || !selectedModel) return;
-
-//     if (credits <= 0) {
-//       router.push("/pricing");
-//       return;
-//     }
-
-//     setIsGenerating(true);
-//     try {
-//       const token = await getToken();
-//       // await axios.post(
-//       //   `${BACKEND_URL}/ai/generate`,
-//       //   {
-//       //     prompt,
-//       //     modelId: selectedModel,
-//       //     num: 1,
-//       //   },
-//       //   {
-//       //     headers: { Authorization: `Bearer ${token}` },
-//       //   }
-//       // );
-//       toast.success("Image generation started!");
-//       setPrompt("");
-//     } catch (error) {
-//       toast.error("Failed to generate image");
-//     } finally {
-//       setIsGenerating(false);
-//     }
-//   };
-
-//   return (
-//     <motion.div
-//       className="space-y-6"
-//       initial={{ opacity: 0, y: 20 }}
-//       animate={{ opacity: 1, y: 0 }}
-//       transition={{ duration: 0.5 }}
-//     >
-//       <div className="space-y-4">
-//         <SelectModel
-//           selectedModel={selectedModel}
-//           setSelectedModel={setSelectedModel}
-//         />
-
-//         <motion.div
-//           initial={{ opacity: 0 }}
-//           animate={{ opacity: 1 }}
-//           transition={{ delay: 0.2 }}
-//           className="relative w-full"
-//         >
-//           <CustomLabel label="Enter your prompt here..." />
-//           {/* <Textarea
-//             className="w-full min-h-24"
-//             onChange={(e) => setPrompt(e.target.value)}
-//           /> */}
-//         </motion.div>
-
-//         <div className="flex justify-end pt-4">
-//           <div className="relative">
-//             <Button
-//               onClick={handleGenerate}
-//               disabled={isGenerating || !prompt || !selectedModel}
-//               variant={"outline"}
-//               className="relative z-20 cursor-pointer"
-//             >
-//               Generate Image <Sparkles size={24} />
-//             </Button>
-//             {prompt && selectedModel && (
-//               <GlowEffect
-//                 colors={["#FF5733", "#33FF57", "#3357FF", "#F1C40F"]}
-//                 mode="colorShift"
-//                 blur="soft"
-//                 duration={3}
-//                 scale={0.9}
-//               />
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//     </motion.div>
-//   );
+// interface Model {
+//   id: string;
+//   name: string;
 // }
+
+export function GenerateImage() {
+  type ModelType = z.infer<typeof TrainModel>;
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [prompt, setPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [models, setModels] = useState<ModelType[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        console.log("api call made now ");
+        const token = await getToken();
+        const res = await axios.get(`/api/getModels?userId=${user?.id}`);
+        console.log("the models are ", res.data);
+        setModels(res.data);
+      } catch (err) {
+        console.error("Failed to fetch models:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user) fetchModels();
+  }, [user]);
+
+  const handleGenerate = async () => {
+    console.log("prompt is ", prompt);
+    console.log("model is ", selectedModel);
+    console.log("the model is also ", models);
+    if (!prompt || !selectedModel) return alert("plz fill the form correctly ");
+    setLoading(true);
+    setGeneratedImage(null);
+    let SendModel: ModelType | null = null;
+    models.map((m) => {
+      if (m.name == selectedModel) {
+        SendModel = m;
+        return;
+      }
+    });
+    const token = await getToken();
+
+    try {
+      const res = await axios.post(
+        `/api/generate`,
+        { prompt, model: SendModel, user },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setGeneratedImage(res.data.imageUrl);
+    } catch (err) {
+      console.error("Generation failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-xl mx-auto mt-10 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl">Generate Image</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            placeholder="Enter your prompt..."
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+          />
+
+          <Select onValueChange={(value) => setSelectedModel(value)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {models.map((model) => (
+                <SelectItem key={model.name} value={model.name}>
+                  {model.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Button
+            onClick={handleGenerate}
+            disabled={loading || !selectedModel || !prompt}
+          >
+            {loading && <Loader2 className="animate-spin mr-2 h-4 w-4" />}
+            Generate
+          </Button>
+        </CardContent>
+      </Card>
+
+      {generatedImage && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Generated Image</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="relative w-full h-96 rounded overflow-hidden">
+              <Image
+                src={generatedImage}
+                alt="Generated"
+                fill
+                className="object-contain"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
