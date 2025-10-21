@@ -12,6 +12,10 @@ export default async function handler(
     }
 
     console.log("Image generation webhook hit:", req.body);
+    console.log(
+      "Images payload:",
+      JSON.stringify(req.body.payload.images, null, 2)
+    );
 
     // Optional: process image URL and save to DB
     return res.status(200).json({ message: "Image webhook received" });
