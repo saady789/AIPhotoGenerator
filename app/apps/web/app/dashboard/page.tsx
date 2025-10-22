@@ -2,7 +2,7 @@
 import { GenerateImage } from "@/components/ui/GenerateImage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TrainForm } from "@/components/ui/train-form";
-// import { Packs } from "@/components/ui/Packs";
+import { Gallary } from "@/components/ui/Gallary";
 import { Models } from "@/components/Models";
 import { redirect } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
@@ -18,11 +18,12 @@ export default function DashboardPage() {
   const { getToken } = useAuth();
 
   const [models, setModels] = useState([]);
+  const [output, setOutput] = useState([]);
+
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        console.log("api call made now ");
         const token = await getToken();
         const res = await axios.get(`/api/getModels?userId=${user?.id}`);
         console.log("the models are ", res.data);
@@ -34,7 +35,22 @@ export default function DashboardPage() {
       }
     };
 
+    const fetchOutput = async () => {
+      try {
+        const token = await getToken();
+        const res = await axios.get(`/api/getOutput?userId=${user?.id}`);
+        console.log("the output is is ", res.data);
+        setOutput(res.data);
+        console.log("output is ", res.data);
+      } catch (err) {
+        console.error("Failed to fetch models:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (user) fetchModels();
+    if (user) fetchOutput();
   }, [user]);
 
   return (
@@ -55,10 +71,10 @@ export default function DashboardPage() {
               Generate
             </TabsTrigger>
             <TabsTrigger
-              value="packs"
+              value="gallary"
               className="data-[state=active]:bg-pink-500/70 backdrop-blur-sm data-[state=active]:text-pink-50 cursor-pointer px-3 py-1.5"
             >
-              Packs
+              Gallary
             </TabsTrigger>
             <TabsTrigger
               value="train"
@@ -82,10 +98,10 @@ export default function DashboardPage() {
               <GenerateImage />
             </TabsContent>
             <TabsContent
-              value="packs"
+              value="gallary"
               className="mt-0 focus-visible:outline-none"
             >
-              {/* <Packs /> */} packs here
+              <Gallary output={output} loading={loading} />
             </TabsContent>
             <TabsContent
               value="train"

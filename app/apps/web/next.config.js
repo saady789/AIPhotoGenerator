@@ -12,6 +12,11 @@ const nextConfig = {
         protocol: "https",
         hostname: "r2-us-west.photoai.com",
       },
+      {
+        protocol: "https",
+        hostname: "v3b.fal.media",
+        pathname: "/**",
+      },
     ],
   },
   experimental: {

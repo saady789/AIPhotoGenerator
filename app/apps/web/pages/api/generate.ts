@@ -17,7 +17,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     console.log("request_id is ", request_id);
     console.log("training successful");
 
-    return res.status(200).json({ message: "api hit was successful" });
+    return res
+      .status(200)
+      .json({ message: "api hit was successful", data: request_id });
   } catch (error: any) {
     console.error("Error in /api/ai/training:", error);
     return res.status(500).json({
