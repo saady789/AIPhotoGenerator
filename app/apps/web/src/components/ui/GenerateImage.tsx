@@ -114,6 +114,7 @@ export function GenerateImage() {
       // NEW: increment attempts on each successful generation
       setAttempts((a) => a + 1);
     } catch (err) {
+      toast.error("some error occured");
       console.error("Generation failed", err);
     } finally {
       setLoading(false);
@@ -185,11 +186,13 @@ export function GenerateImage() {
               <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>
-              {models.map((model) => (
-                <SelectItem key={model.name} value={model.name}>
-                  {model.name}
-                </SelectItem>
-              ))}
+              {models
+                .filter((model) => model.trainingStatus === "Generated")
+                .map((model) => (
+                  <SelectItem key={model.name} value={model.name}>
+                    {model.name}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
 

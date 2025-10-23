@@ -15,6 +15,7 @@ interface Model {
   ethnicity: string;
   zipUrl: string;
   previewImage?: string;
+  trainingStatus: string;
 }
 
 export function Models({
@@ -24,13 +25,14 @@ export function Models({
   models: Model[];
   loading: boolean;
 }) {
+  const trainedModels = models.filter((m) => m.trainingStatus === "Generated");
   if (loading) {
     return (
       <p className="text-center text-gray-400 text-sm">Loading models...</p>
     );
   }
 
-  if (!models.length) {
+  if (!trainedModels.length) {
     return (
       <div className="text-center text-muted-foreground text-sm py-12">
         No models found. Train a model to get started.
@@ -40,7 +42,7 @@ export function Models({
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-      {models.map((model) => (
+      {trainedModels.map((model) => (
         <Card
           key={model.id}
           className="shadow-md hover:shadow-xl transition-shadow duration-300 rounded-xl border"

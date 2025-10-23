@@ -42,6 +42,7 @@ export const TrainModel = z.object({
   bald: z.boolean(),
   userId: z.string().min(1, "UserId is required"),
   zipUrl: z.string().min(1, "Zip URL is required"),
+  trainingStatus: z.string(),
 });
 
 export const GenerateImage = z.object({

@@ -52,6 +52,7 @@ export function TrainForm() {
       bald: false,
       zipUrl: "zipUrl",
       userId: "saadybhai",
+      trainingStatus: "Pending",
     },
   });
 
@@ -68,7 +69,8 @@ export function TrainForm() {
   }
 
   const onSubmit = async (values: TrainModelType) => {
-    if (files.length == 0) return alert("Plz upload your files as well");
+    if (files.length == 0) return toast.info("Plz upload your files as well");
+    console.log("I was called");
     // console.log("Form values:", values);
     // console.log("Selected file:", file);
     try {
@@ -76,6 +78,7 @@ export function TrainForm() {
         toast.info("You are not allowed to train. Please contact the owner");
         return;
       }
+      console.log("settting disalbe to true");
       setDisable(true);
       const token = await getToken();
       const response = await axios.get(`/api/pre-signed-url`, {
@@ -110,7 +113,7 @@ export function TrainForm() {
         "Training Is Under Way Please Wait For Few Minutes. Your Model Should Show Up In A Few Minutes"
       );
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again!");
