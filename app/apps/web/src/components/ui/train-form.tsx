@@ -33,7 +33,6 @@ import { Switch } from "@/components/ui/switch";
 export function TrainForm() {
   const { user } = useUser();
   const router = useRouter();
-
   const { getToken } = useAuth();
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -73,6 +72,10 @@ export function TrainForm() {
     // console.log("Form values:", values);
     // console.log("Selected file:", file);
     try {
+      if (user?.publicMetadata.allowedToTrain !== true) {
+        toast.info("You are not allowed to train. Please contact the owner");
+        return;
+      }
       setDisable(true);
       const token = await getToken();
       const response = await axios.get(`/api/pre-signed-url`, {
@@ -103,7 +106,9 @@ export function TrainForm() {
           },
         }
       );
-      toast.success("Training Is Under Way Please Wait For Few Minutes");
+      toast.success(
+        "Training Is Under Way Please Wait For Few Minutes. Your Model Should Show Up In A Few Minutes"
+      );
       setTimeout(() => {
         router.push("/dashboard");
       }, 2000);
