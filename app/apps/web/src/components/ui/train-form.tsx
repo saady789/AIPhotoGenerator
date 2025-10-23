@@ -1,4 +1,5 @@
 "use client";
+import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { useState, useRef } from "react";
 import { z } from "zod";
@@ -7,6 +8,7 @@ import JSZip from "jszip";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BACKEND_URL } from "../../../app/config";
+import { useRouter } from "next/navigation";
 import { TrainModel } from "common/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,10 +32,12 @@ import { Switch } from "@/components/ui/switch";
 
 export function TrainForm() {
   const { user } = useUser();
+  const router = useRouter();
 
   const { getToken } = useAuth();
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [disable, setDisable] = useState(false);
 
   type TrainModelType = z.infer<typeof TrainModel>;
 
@@ -69,6 +73,7 @@ export function TrainForm() {
     // console.log("Form values:", values);
     // console.log("Selected file:", file);
     try {
+      setDisable(true);
       const token = await getToken();
       const response = await axios.get(`/api/pre-signed-url`, {
         headers: {
@@ -98,7 +103,13 @@ export function TrainForm() {
           },
         }
       );
+      toast.success("Training Is Under Way Please Wait For Few Minutes");
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 2000);
     } catch (error) {
+      toast.error("Something went wrong. Please try again!");
+      setDisable(false); // re-enable button for retry
       //display internal server error
       console.error("Upload or training failed:", error);
       alert("Something went wrong. Check the console for details.");
@@ -291,7 +302,7 @@ export function TrainForm() {
           {/* <Button type="button" variant="outline">
             Cancel
           </Button> */}
-          <Button type="submit" className="cursor-pointer">
+          <Button disabled={disable} type="submit" className="cursor-pointer">
             Create Model
           </Button>
         </div>
