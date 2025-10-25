@@ -130,9 +130,9 @@ export function TrainForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="max-w-md mx-auto p-6 bg-white rounded shadow-md space-y-4"
       >
-        <h2 className="text-xl font-semibold text-center">Create project</h2>
+        <h2 className="text-xl font-semibold text-center">Train Model</h2>
         <p className="text-sm text-muted-foreground text-center mb-4">
-          Deploy your new project in one-click.
+          Train your new model in one-click.
         </p>
 
         {/* Name */}
